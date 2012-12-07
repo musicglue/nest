@@ -30,7 +30,14 @@ class Nest < String
 
   METHODS.each do |meth|
     define_method(meth) do |*args, &block|
-      redis.send(meth, self, *args, &block)
+      if redis.is_a?(Redis)
+        redis.send(meth, self, *args, &block)
+      else
+        redis.with_connection do |r|
+          r.send(meth, self, *args, &block)
+        end
+      end
     end
   end
+
 end
